@@ -5,17 +5,17 @@ import java.util.Scanner;
 public class Hangman {
     public static void main(String[] args) {
         Game game = new Game();
-        Scanner input = new Scanner(System.in);
+        Scanner inputScanner = new Scanner(System.in);
         while(true) {
             boolean isStartGame = false;
 
             while (true) {
                 System.out.println("Для начала игры введите Да. Для выхода введите Нет");
-                String inStr = input.nextLine();
+                String answerForStart = inputScanner.nextLine();
 
-                if (inStr.equalsIgnoreCase("нет")) {
+                if (answerForStart.equalsIgnoreCase("нет")) {
                     break;
-                } else if (inStr.equalsIgnoreCase("да")) {
+                } else if (answerForStart.equalsIgnoreCase("да")) {
                     isStartGame = true;
                     break;
                 }
@@ -24,9 +24,9 @@ public class Hangman {
             if (isStartGame) {
                 game.startGame();
                 while (!game.isFinishGameLose() && !game.isFinishGameWin()) {
-                    String inStr = input.nextLine();
-                    if (game.validationStep(inStr)) {
-                        game.doStep(inStr);
+                    String inputStep = inputScanner.nextLine();
+                    if (game.validationOfStep(inputStep)) {
+                        game.doStep(inputStep);
                     }
                 }
 

@@ -1,7 +1,7 @@
 package by;
 
 public class GallowsTree {
-    private final static String[] gallows = {
+    private final static String[] GALLOWS = {
             """
 
         
@@ -104,6 +104,6 @@ public class GallowsTree {
 """};
 
     public static void PrintGallowsTree(int numberOfErr) {
-        System.out.println(gallows[numberOfErr]);
+        System.out.println(GALLOWS[numberOfErr]);
     }
 }

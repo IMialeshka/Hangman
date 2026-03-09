@@ -5,12 +5,12 @@ import java.util.regex.Pattern;
 
 public class Game {
     private StringBuilder word;
-    private StringBuilder wordForPrint;
+    private StringBuilder wordForShow;
     private final DictionaryOfGame dictionaryOfGame;
-    private int error;
-    private StringBuilder errorList;
-    private int sizeOfWord = 0;
-    private final static int errCount = 10;
+    private int mistakeOfCurrentGame;
+    private StringBuilder doneMistakeList;
+    private int countOfUnsolvedLetters = 0;
+    private final static int COUNT_MISTAKES_STEP = 10;
 
     public Game() {
       dictionaryOfGame = new DictionaryOfGame();
@@ -18,15 +18,15 @@ public class Game {
 
     public void startGame() {
         this.word = new StringBuilder(dictionaryOfGame.getWord());
-        this.sizeOfWord = word.length();
-        this.error = errCount;
-        this.wordForPrint = new StringBuilder("_".repeat(this.word.length()));
-        System.out.println(this.wordForPrint);
-        this.errorList = new StringBuilder();
+        this.countOfUnsolvedLetters = word.length();
+        this.mistakeOfCurrentGame = COUNT_MISTAKES_STEP;
+        this.wordForShow = new StringBuilder("_".repeat(this.word.length()));
+        System.out.println(this.wordForShow);
+        this.doneMistakeList = new StringBuilder();
 
     }
 
-    public boolean validationStep(String step) {
+    public boolean validationOfStep(String step) {
         if (step.isEmpty()) {
             return false;
         }
@@ -35,7 +35,7 @@ public class Game {
             return false;
         }
 
-        if(errorList.indexOf(step) != -1) {
+        if(doneMistakeList.indexOf(step) != -1) {
             return false;
         }
 
@@ -46,24 +46,24 @@ public class Game {
     }
 
     public void doStep(String step) {
-        int index = word.indexOf(step);
+        int index = this.word.indexOf(step);
         if (index != -1) {
-            sizeOfWord--;
-            word.replace(index, index + 1,"_");
-            wordForPrint.replace(index, index + 1,step);
-            System.out.println(this.wordForPrint);
+            this.countOfUnsolvedLetters--;
+            this.word.replace(index, index + 1,"_");
+            wordForShow.replace(index, index + 1,step);
+            System.out.println(this.wordForShow);
         } else {
-            error--;
-            GallowsTree.PrintGallowsTree(errCount - error - 1);
-            errorList.append(step);
+            this.mistakeOfCurrentGame--;
+            GallowsTree.PrintGallowsTree(COUNT_MISTAKES_STEP - this.mistakeOfCurrentGame - 1);
+            this.doneMistakeList.append(step);
         }
     }
 
     public boolean isFinishGameLose() {
-        return this.error == 0;
+        return this.mistakeOfCurrentGame == 0;
     }
 
     public boolean isFinishGameWin() {
-        return sizeOfWord == 0;
+        return this.countOfUnsolvedLetters == 0;
     }
 }
