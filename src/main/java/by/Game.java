@@ -1,69 +1,89 @@
 package by;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Scanner;
 
 public class Game {
-    private StringBuilder word;
-    private StringBuilder wordForShow;
-    private final DictionaryOfGame dictionaryOfGame;
-    private int mistakeOfCurrentGame;
-    private StringBuilder doneMistakeList;
-    private int countOfUnsolvedLetters = 0;
+    private Player player;
+
+    private final static String START = "ДА";
+    private final static String QUIT = "НЕТ";
+    private Dictionary dictionary;
+    private String word;
+    StringBuilder guessedLetters;
     private final static int COUNT_MISTAKES_STEP = 10;
 
-    public Game() {
-      dictionaryOfGame = new DictionaryOfGame();
+
+    public Game(Dictionary dictionary, Player player) {
+        this.dictionary  = dictionary;
+        this.player = player;
     }
 
-    public void startGame() {
-        this.word = new StringBuilder(dictionaryOfGame.getWord());
-        this.countOfUnsolvedLetters = word.length();
-        this.mistakeOfCurrentGame = COUNT_MISTAKES_STEP;
-        this.wordForShow = new StringBuilder("_".repeat(this.word.length()));
-        System.out.println(this.wordForShow);
-        this.doneMistakeList = new StringBuilder();
+    public void play(Scanner  inputScanner) {
+        boolean state = false;
+        while (true) {
+            System.out.printf("Для начала игры введите '%s'. Для выхода введите '%s' %n", START, QUIT);
+            String command  = inputScanner.nextLine();
 
-    }
-
-    public boolean validationOfStep(String step) {
-        if (step.isEmpty()) {
-            return false;
+            if (command .equalsIgnoreCase(QUIT)) {
+                break;
+            } else if (command.equalsIgnoreCase(START)) {
+                state = true;
+                word = this.dictionary.getWord();
+                this.guessedLetters = new StringBuilder("_".repeat(this.word.length()));
+                Renderer.printStart(this.guessedLetters);
+                break;
+            }
         }
 
-        if (step.length() != 1) {
-            return false;
-        }
+        if (state) {
+            while (!isLose() && !isWin()) {
+                System.out.println("Ввведите маленькую букву рус. алфавита:");
+                String inputStep = inputScanner.nextLine();
+                Step newStep = new Step(inputStep, true);
+                if (newStep.validateStep()) {
+                    if (!chekPresenceLetter(newStep)) {
+                        Renderer.printError(this.player.getErrorCounter());
+                    }
+                    this.player.addStep(newStep);
+                    Renderer.printInfoStep(String.valueOf(guessedLetters), this.player);
+                }
+            }
 
-        if(doneMistakeList.indexOf(step) != -1) {
-            return false;
-        }
 
-        String regexp = "[а-яА-ЯёЁ]";
-        Pattern pattern = Pattern.compile(regexp);
-        Matcher matcher = pattern.matcher(step);
-        return matcher.find();
-    }
-
-    public void doStep(String step) {
-        int index = this.word.indexOf(step);
-        if (index != -1) {
-            this.countOfUnsolvedLetters--;
-            this.word.replace(index, index + 1,"_");
-            wordForShow.replace(index, index + 1,step);
-            System.out.println(this.wordForShow);
-        } else {
-            this.mistakeOfCurrentGame--;
-            GallowsTree.PrintGallowsTree(COUNT_MISTAKES_STEP - this.mistakeOfCurrentGame - 1);
-            this.doneMistakeList.append(step);
+            if (isLose()) {
+                Renderer.printLose(this.word);
+            }
+            if (isWin()) {
+                Renderer.printWin(this.word);
+            }
+            this.player.clean();
+            play(inputScanner);
         }
     }
 
-    public boolean isFinishGameLose() {
-        return this.mistakeOfCurrentGame == 0;
+
+    private boolean chekPresenceLetter(Step step) {
+        int symbolIndex = word.indexOf(step.getStep());
+        boolean presenceLetterFound = false;
+        while (symbolIndex >= 0) {
+            if (step.isError()) {
+                step.setError(false);
+            }
+            presenceLetterFound = true;
+            this.guessedLetters.replace(symbolIndex, symbolIndex + 1, step.getStep());
+            symbolIndex = word.indexOf(step.getStep(), symbolIndex + 1);
+        }
+        if (this.player.getSteps().contains(step)) {
+            presenceLetterFound = true;
+        }
+        return presenceLetterFound;
     }
 
-    public boolean isFinishGameWin() {
-        return this.countOfUnsolvedLetters == 0;
+    private boolean isLose() {
+        return this.player.getErrorCounter() == COUNT_MISTAKES_STEP;
+    }
+
+    private boolean isWin() {
+        return this.guessedLetters.indexOf("_") == -1;
     }
 }
